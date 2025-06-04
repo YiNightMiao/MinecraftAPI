@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.JSONObject;
 public class MinecraftAPI extends JavaPlugin {
     private static MinecraftAPI instance;
 
