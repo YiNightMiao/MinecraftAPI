@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpExchange;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -13,6 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HttpServerThread extends Thread {
+    private volatile boolean running = true;
+    private HttpServerThread httpThread;
     @Override
     public void run() {
         try {
@@ -20,14 +21,16 @@ public class HttpServerThread extends Thread {
             int port = MinecraftAPI.getInstance().getConfig().getInt("port", 8080);
 
             HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
-            server.createContext("/command", this::handleRequest);
+            server.createContext("/", this::handleRequest);
             server.setExecutor(null);
             server.start();
 
-            MinecraftAPI.getInstance().getLogger().info("HTTP服务启动成功啦 " + host + ":" + port);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public void shutdown(){
+        running = false;
     }
 
     private void handleRequest(HttpExchange exchange) throws IOException {
@@ -55,7 +58,6 @@ public class HttpServerThread extends Thread {
         MinecraftAPI.getInstance().getLogger().info("[DEBUG] 请求体: " + body.toString());
     }
 
-    // URL 参数解析
     String[] params = body.toString().split("&");
     String type = "", message = "", key = "";
     for (String param : params) {
@@ -71,7 +73,6 @@ public class HttpServerThread extends Thread {
         }
     }
 
-    // 验证 key
     String configKey = MinecraftAPI.getInstance().getConfig().getString("server_key");
     if (!key.equals(configKey)) {
         sendResponse(exchange, 403, "Invalid key");
@@ -88,17 +89,17 @@ public class HttpServerThread extends Thread {
             Bukkit.getScheduler().runTask(MinecraftAPI.getInstance(), () -> {
                 boolean success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), CommandToRun);
                 if (MinecraftAPI.debugMode) {
-                    MinecraftAPI.getInstance().getLogger().info("[DEBUG] 命令执行成功? " + success);
+                    MinecraftAPI.getInstance().getLogger().info("[DEBUG] 命令执行成功 " + success);
                 }
             });
 
-            sendResponse(exchange, 200, "Command executed");
+            sendResponse(exchange, 200, "命令执行完成。");
             break;
         }
         case "getplayer": {
-            List<Player> players = (List<Player>) Bukkit.getOnlinePlayers();
+            List<Player> players = Bukkit.getOnlinePlayers().stream().collect(Collectors.toList());
             String names = players.stream().map(Player::getName).collect(Collectors.joining(","));
-            String response = "online-player=" + names + "\ncount=" + players.size();
+            String response = "online-player=" + names + "\nsize=" + players.size();
             sendResponse(exchange, 200, response);
             break;
         }
@@ -142,5 +143,23 @@ public class HttpServerThread extends Thread {
 
     private String formatMemory(long bytes) {
         return String.format("%.2f MB", bytes / 1024.0 / 1024.0);
+    }
+    public boolean isRunning() {
+        return running;
+    }
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+    public HttpServerThread getHttpThread() {
+        return httpThread;
+    }
+    public void setHttpThread(HttpServerThread httpThread) {
+        this.httpThread = httpThread;
+    }
+    public IOException getE() {
+        IOException e = null;
+        return e;
+    }
+    public void setE(IOException e) {
     }
 }

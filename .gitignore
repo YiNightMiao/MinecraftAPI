@@ -1,0 +1,19 @@
+# 忽略 Maven 编译输出
+target/
+
+# 忽略 VSCode 配置文件夹
+.vscode/
+
+# 忽略临时文件
+*.log
+*.class
+*.tmp
+*.swp
+.DS_Store
+
+# 忽略操作系统/IDE生成的配置文件
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
