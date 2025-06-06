@@ -2,3 +2,4 @@ server_key: "inputyourkeyhere" #输入你的密钥
 host: "127.0.0.1"          # 绑定的 IP 地址
 port: 8080                 # 监听端口
 allow_remote: false        # 是否允许非 127.0.0.1 的访问
+Allow-domain: ""

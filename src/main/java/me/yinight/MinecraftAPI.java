@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 
 public class MinecraftAPI extends JavaPlugin {
     private static MinecraftAPI instance;
+    private boolean enable = false;
     private HttpServerThread httpThread;
     private boolean isPortAvailable(int port) {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -30,9 +31,11 @@ public class MinecraftAPI extends JavaPlugin {
         if (isPortAvailable(port)) {
             httpThread = new HttpServerThread();
             httpThread.start();
+            enable = true;
         }
         else {
             getLogger().info("[YiNightProject]请检查端口是否占用 你使用的端口:"+port+"强制启动请在插件加载完成后输入/minecraftapi start");
+            enable = true;
         }
     }
 
@@ -52,7 +55,11 @@ public class MinecraftAPI extends JavaPlugin {
 
     @Override
 public void reloadConfig() {
-    super.reloadConfig(); 
+    if (enable=false) {
+        super.reloadConfig();
+    }
+    else {
+        super.reloadConfig(); 
     int port = getConfig().getInt("port");
 
     if (httpThread != null) {
@@ -68,6 +75,9 @@ public void reloadConfig() {
         getLogger().warning("[MinecraftAPI] 端口 " + port + " 被占用，无法启动服务");
         getLogger().warning("你可以稍后使用 /minecraftapi start 来尝试强制启动");
     }
+
+    }
+    
 }
 
     public static MinecraftAPI getInstance() {
